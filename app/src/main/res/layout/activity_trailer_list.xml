@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="35dp"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <Button
+        android:id="@+id/playTrailerTV"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_gravity="center_vertical"
+        android:backgroundTint="#FFFFFF"
+        android:drawableStart="@drawable/ic_action_play"
+        android:gravity="center_vertical"
+        android:textColor="#000000"
+        tools:text="@string/play_trailer_tv" />
+
+</LinearLayout>

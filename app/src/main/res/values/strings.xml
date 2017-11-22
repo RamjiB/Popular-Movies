@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">MDB</string>
+
+    <!-- ImageView content description -->
+    <string name="movie_poster_image">Poster Image</string>
+    <string name="star_image">Star Image</string>
+
+    <!-- TextView content description -->
+    <string name="overview">Overview</string>
+    <string name="released_on">Released on</string>
+    <string name="error_message">Please check your Internet connection</string>
+    <string name="refresh">Refresh</string>
+    <string name="play_trailer_tv">Play Trailer</string>
+    <string name="reviews">Reviews</string>
+    <string name="favourite_off">favourite off</string>
+    <string name="favourite_on">favourite on</string>
+
+    <!-- Spinner Array -->
+    <string-array name="sort_list">
+
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>favourite</item>
+
+    </string-array>
+
+</resources>

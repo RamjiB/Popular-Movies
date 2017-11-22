@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/apk/res-auto"
+    android:layout_width="170dp"
+    android:layout_height="300dp"
+    android:layout_margin="5dp"
+    android:animationCache="true"
+    tool:cardBackgroundColor="#000000">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Image Poster View -->
+
+        <ImageView
+            android:id="@+id/movie_poster_image"
+            android:layout_width="160dp"
+            android:layout_height="260dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/movie_poster_image"
+            tool:layout_constraintTop_toTopOf="parent"
+            tool:layout_constraintLeft_toLeftOf="parent"
+            tool:layout_constraintRight_toRightOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp" />
+
+        <!--Name of the movie -->
+
+        <TextView
+            android:id="@+id/movie_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:padding="2dp"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="italic"
+            tool:layout_constraintBottom_toBottomOf="parent"
+            tool:layout_constraintLeft_toLeftOf="parent"
+            tool:layout_constraintRight_toRightOf="parent"
+            tool:layout_constraintTop_toBottomOf="@+id/movie_poster_image" />
+
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v7.widget.CardView>

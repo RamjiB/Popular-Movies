@@ -1,0 +1,8 @@
+<resources>
+
+    <style name="Theme.NoTitleBar.Fullscreen.Light.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar" >
+        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    </style>
+
+</resources>
