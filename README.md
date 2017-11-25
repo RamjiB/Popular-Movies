@@ -21,8 +21,7 @@ This app will allow the users to discover the most popular movies , top rated mo
 ### Procedure
 
 1. Download the code from repository
-2. Move into NetworkUtils.java through
-      Popular-Movies/app/src/main/java/com/rbuys/android/mdb/Utils/NetworkUtils.java
+2. Move into gradle.properties in your project
 3.Provide your API key in API_KEY string
 
 ### References

@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class NetworkUtils {
 
     //Api key
-    private static final String API_KEY = "Enter your API key here";
+    private static final String API_KEY = com.rbuys.android.mdb.BuildConfig.MOVIE_DB_API;
 
     private static final String BASE_URL = "https://api.themoviedb.org/3/movie/";
     private static final String REVIEWS = "reviews";

@@ -1,10 +1,11 @@
 package com.rbuys.android.mdb.home;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,7 +23,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.rbuys.android.mdb.data.FavouriteContract;
-import com.rbuys.android.mdb.data.FavouriteDbHelper;
 import com.rbuys.android.mdb.movie_detail.MovieDetailsActivity;
 import com.rbuys.android.mdb.R;
 import com.rbuys.android.mdb.utils.MoviesJsonUtils;
@@ -41,7 +41,12 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
     private TextView errorMessage;
     public static MoviesGridAdapter mMoviesGridAdapter;
     private String itemSelectedFromSpinner;
-    public static SQLiteDatabase db;
+    private RecyclerView mRecyclerView;
+
+    //saved instance constance
+    private final String KEY_RECYCLER_STATE = "recycler_state";
+    private Parcelable listState;
+
 
 
     @Override
@@ -49,6 +54,8 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Log.i(TAG,"onCreate");
+
+
 
         //Error Message
         errorMessage = (TextView) findViewById(R.id.error_message);
@@ -61,14 +68,6 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         //Loading Indicator
         mLoadingIndicator = (ProgressBar) findViewById(R.id.loading_indicator);
 
-        // Create a DB helper (this will create the DB if run for the first time)
-        FavouriteDbHelper dbHelper = new FavouriteDbHelper(this);
-
-        // Keep a reference to the mDb until paused or killed. Get a writable database
-        // because you will be adding favourite movies
-
-        db = dbHelper.getWritableDatabase();
-
 
         /*
          * setting up Spinner with sorting list
@@ -79,7 +78,7 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
 
         //Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.sort_list,R.layout.spinner_item);
+                R.array.sort_list, R.layout.spinner_item);
 
         //Specify the layout to use when the list of choices appears
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -87,16 +86,7 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         //Apply the adapter to the spinner
         sortSpinner.setAdapter(spinnerAdapter);
 
-    }
 
-    public static Cursor getAllMovies() {
-        return db.query(FavouriteContract.FavouriteEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
     }
 
     /**
@@ -129,24 +119,31 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
     private void loadMoviesData(String sortOption) {
 
         Log.i(TAG,"loadMoviesData");
+        GridLayoutManager gridLayoutManager;
         if (Objects.equals(sortOption, "favourite")){
 
             // Get all movies info from the database and save in a cursor
-            Cursor cursor = getAllMovies();
+            @SuppressLint("Recycle") Cursor cursor = getContentResolver().query(FavouriteContract.FavouriteEntry.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
 
             /*
              * Setting up RecyclerView to hold favourite movies list
              */
 
-            RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies_adapter);
+            mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies_adapter);
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
                 Log.i(TAG,"PORTRAIT");
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this,2)); //number of columns = 2
+                gridLayoutManager = new GridLayoutManager(this,2);//number of columns = 2
+
             }else{
                 Log.i(TAG,"LANDSCAPE");
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this,3)); //number of columns = 3
-            }
+                gridLayoutManager = new GridLayoutManager(this,3);//number of columns = 3
 
+            }
+            mRecyclerView.setLayoutManager(gridLayoutManager);
             mRecyclerView.setHasFixedSize(true);
             mMoviesGridAdapter = new MoviesGridAdapter(this,cursor);
             mRecyclerView.setAdapter(mMoviesGridAdapter);
@@ -160,17 +157,19 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
          * Setting up RecyclerView to hold movies list
          */
 
-            RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies_adapter);
+            mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies_adapter);
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
                 Log.i(TAG,"PORTRAIT");
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this,2)); //number of columns = 2
+                gridLayoutManager = new GridLayoutManager(this,2);//number of columns = 2
+
             }else{
                 Log.i(TAG,"LANDSCAPE");
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this,3)); //number of columns = 3
+                gridLayoutManager = new GridLayoutManager(this, 3);//number of columns = 3
+
             }
 
+            mRecyclerView.setLayoutManager(gridLayoutManager);
             mRecyclerView.setHasFixedSize(true);
-
             mMoviesGridAdapter = new MoviesGridAdapter(this,null);
             mRecyclerView.setAdapter(mMoviesGridAdapter);
         }
@@ -226,7 +225,14 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
             mLoadingIndicator.setVisibility(View.INVISIBLE);
 
             if (moviesDetails != null){
-                mMoviesGridAdapter.setMDBData(moviesDetails);
+
+                //check for saved data so that on rotation it wont start from top
+                if (listState != null){
+                    mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
+                    mMoviesGridAdapter.setMDBData(moviesDetails);
+                }else {
+                    mMoviesGridAdapter.setMDBData(moviesDetails);
+                }
             }else{
                 errorMessage.setVisibility(View.VISIBLE);
             }
@@ -250,5 +256,19 @@ public class HomeActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(KEY_RECYCLER_STATE,mRecyclerView.getLayoutManager().onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null){
+            listState = savedInstanceState.getParcelable(KEY_RECYCLER_STATE);
+        }
     }
 }

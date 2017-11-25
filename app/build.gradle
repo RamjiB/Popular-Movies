@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion "26.0.1"
+
     defaultConfig {
         applicationId "com.rbuys.android.mdb"
         minSdkVersion 23
@@ -17,6 +18,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    buildTypes.each{
+        it.buildConfigField('String','MOVIE_DB_API',MovieDBApi)
     }
 }
 

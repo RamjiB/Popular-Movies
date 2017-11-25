@@ -48,7 +48,7 @@ public class MoviesJsonUtils {
             String moviePosterImagePaths = movieDetail.getString(MDB_POSTER_PATH);
 
             //get movie vote average
-            String voteAverage = movieDetail.getString(MDB_VOTE_AVERAGE);
+            String voteAverage = movieDetail.getString(MDB_VOTE_AVERAGE) + "/10";
 
             //get movie overview
             String overview = movieDetail.getString(MDB_OVERVIEW);

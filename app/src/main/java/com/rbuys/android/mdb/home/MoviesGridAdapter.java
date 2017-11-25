@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rbuys.android.mdb.R;
 import com.rbuys.android.mdb.data.FavouriteContract;
@@ -39,6 +40,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter<MoviesGridAdapter.Mo
     }
 
 
+
     @Override
     public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         mContext = parent.getContext();
@@ -65,6 +67,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter<MoviesGridAdapter.Mo
             String imagePath = imageURL + movie[POSTER_PATH];
             Picasso.with(mContext).load(imagePath).into(holder.movie_poster_image);
 
+
         }else {
             if (!mCursor.moveToPosition(position)){
                 return;
@@ -82,7 +85,6 @@ public class MoviesGridAdapter extends RecyclerView.Adapter<MoviesGridAdapter.Mo
                                 FavouriteContract.FavouriteEntry.COLUMN_IMAGE));
             String imagePath = imageURL + posterImage;
             Picasso.with(mContext).load(imagePath).into(holder.movie_poster_image);
-
         }
 
     }
@@ -92,6 +94,9 @@ public class MoviesGridAdapter extends RecyclerView.Adapter<MoviesGridAdapter.Mo
         if (mMoviesInfo == null){
             if (mCursor != null){
                 Log.i(TAG,"count: "+ mCursor.getCount());
+                if (mCursor.getCount() == 0){
+                    Toast.makeText(mContext, "No favourite movies", Toast.LENGTH_SHORT).show();
+                }
                 return mCursor.getCount();
             }
             return 0;

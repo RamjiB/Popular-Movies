@@ -1,6 +1,7 @@
 package com.rbuys.android.mdb.movie_detail;
 
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -19,7 +20,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rbuys.android.mdb.R;
 import com.rbuys.android.mdb.data.FavouriteContract;
@@ -32,8 +35,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static com.rbuys.android.mdb.home.HomeActivity.db;
-import static com.rbuys.android.mdb.home.HomeActivity.getAllMovies;
+
 import static com.rbuys.android.mdb.home.MoviesGridAdapter.imageURL;
 
 public class MovieDetailsActivity extends AppCompatActivity implements TrailerListAdapter.ItemClickListener {
@@ -47,6 +49,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
     private TextView mReview;
     private ImageView mPosterImage;
     private ImageView heartWhite,heartRed,mStartImage;
+    private ScrollView scrollView;
 
     private ProgressBar mLoadingIndicator;
     private TextView errorMessage;
@@ -58,6 +61,10 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
     private ReviewListAdapter mReviewListAdapter;
     private RecyclerView reviewRecyclerView;
 
+    //saved instance constance
+    private final String KEY_SCROLL_STATE = "scroll_State";
+    private int[] scrollPosition;
+
     private final int TITLE = 0;
     private final int POSTER_PATH = 1;
     private final int VOTE_AVERAGE = 2;
@@ -68,6 +75,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         switch (getResources().getConfiguration().orientation){
             case Configuration.ORIENTATION_PORTRAIT:
                 setContentView(R.layout.activity_movie_detail);
@@ -138,7 +146,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
                 setUpViews(movieDetails);
             }
         }
-
     }
 
     private void setUpViews(String movieDetails) {
@@ -159,7 +166,13 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
         new trailerContentTask().execute(movieInfo[ID]);
         new reviewContentTask().execute(movieInfo[ID]);
 
-        Cursor cursor = getAllMovies();
+        @SuppressLint("Recycle") Cursor cursor = getContentResolver().query(FavouriteContract.FavouriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+
+        assert cursor != null;
         cursor.moveToFirst();
         while ( !cursor.isAfterLast()) {
             String title = cursor.getString(cursor.getColumnIndex(
@@ -174,6 +187,15 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
                 break;
             }
             cursor.moveToNext();
+        }
+
+        if (scrollPosition != null){
+            scrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    scrollView.scrollTo(scrollPosition[0],scrollPosition[1]);
+                }
+            });
         }
     }
 
@@ -205,10 +227,20 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
         cv.put(FavouriteContract.FavouriteEntry.COLUMN_RELEASE_DATE,movieInfo[RELEASE_DATE]);
         cv.put(FavouriteContract.FavouriteEntry.COLUMN_OVERVIEW,movieInfo[OVERVIEW]);
         cv.put(FavouriteContract.FavouriteEntry.COLUMN_ID,movieInfo[ID]);
-        db.insert(FavouriteContract.FavouriteEntry.TABLE_NAME,null,cv);
+
+        Uri uri = getContentResolver().insert(FavouriteContract.FavouriteEntry.CONTENT_URI,cv);
+        Log.i(TAG,"insert Uri: "+uri);
+
+        if (uri != null){
+            Toast.makeText(this, "Added to Favourite movies list", Toast.LENGTH_SHORT).show();
+        }
 
         //update the cursor in the adapter
-        HomeActivity.mMoviesGridAdapter.swapCursor(getAllMovies());
+        HomeActivity.mMoviesGridAdapter.swapCursor(getContentResolver().query(FavouriteContract.FavouriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null));
     }
 
     /**
@@ -219,11 +251,21 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
         heartWhite.setVisibility(View.VISIBLE);
         heartRed.setVisibility(View.INVISIBLE);
 
+        // Build appropriate uri with String row id appended
+        Uri uri = FavouriteContract.FavouriteEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(String.valueOf(rowId)).build();
+        Log.d(TAG,"uri"+ uri);
+
         //remove data from database
-        db.delete(FavouriteContract.FavouriteEntry.TABLE_NAME, FavouriteContract.FavouriteEntry._ID + "=" + rowId,null);
+        getContentResolver().delete(uri,null,null);
+        Toast.makeText(this, "Removed from Favourite movies list", Toast.LENGTH_SHORT).show();
 
         //update the cursor in the adapter
-        HomeActivity.mMoviesGridAdapter.swapCursor(getAllMovies());
+        HomeActivity.mMoviesGridAdapter.swapCursor(getContentResolver().query(FavouriteContract.FavouriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null));
 
     }
 
@@ -365,5 +407,23 @@ public class MovieDetailsActivity extends AppCompatActivity implements TrailerLi
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i(TAG,"onSaveInstanceState");
+        //ScrollView
+        scrollView = (ScrollView) findViewById(R.id.scrollView);
+        outState.putIntArray(KEY_SCROLL_STATE,
+                new int[]{scrollView.getScrollX(),scrollView.getScrollY()});
+        Log.i(TAG,"scrollPosition: "+scrollView.getScrollX()+ " , " +scrollView.getScrollY());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        scrollPosition = savedInstanceState.getIntArray(KEY_SCROLL_STATE);
+        Log.i(TAG,"scrollPosition: "+ Arrays.toString(scrollPosition));
     }
 }
